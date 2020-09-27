@@ -1,6 +1,10 @@
+// use uuid to create a random string to id this player
+const uuid = require("uuid/v4");
+
 // this is where all the data that EVERYONE needs to know about
 class PlayerData {
   constructor(playerName, settings) {
+    this.uid = uuidv4(); // this will generrate a random string
     this.name = playerName;
     this.locX = Math.floor(settings.worldWidth * Math.random() + 100);
     this.locY = Math.floor(settings.worldHeight * Math.random() + 100);

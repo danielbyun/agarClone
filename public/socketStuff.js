@@ -38,3 +38,27 @@ socket.on("tickTock"),
     player.locX = data.playerX;
     player.locY = data.playerY;
   };
+
+socket.on("updateLeaderBoard", (data) => {
+  // console.log(data);
+  document.querySelector(".leader-board").innerHTML = "";
+
+  data.forEach((curPlayer) => {
+    document.querySelector(".player-score").innerHTML += `
+    <div>Score: <span class="player-score">${curPlayer.score}</span></div>`;
+    document.querySelector(".leader-board").innerHTML += `
+      <li class="leaderboard-player">${curPlayer.name} - ${curPlayer.score}</li>
+    `;
+  });
+});
+
+// update html
+socket.on("playerDeath", (data) => {
+  document.querySelector(
+    "#game-message"
+  ).innerHTML = `${data.died.name} absorbed by ${data.killedBy.name}`;
+
+  $("#game-message").css({ "background-color": "#00e6e6", opacity: 1 });
+  $("#game-message").show();
+  $("#game-message").fadeOut(5000);
+});

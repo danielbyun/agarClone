@@ -117,7 +117,7 @@ io.sockets.on("connect", (socket) => {
         };
         // console.log(orbData);
         // every socket needs to know the leaderBoard has changed
-        io.sockets.emit("updateLeaderBoard", leaderBoard);
+        io.sockets.emit("updateLeaderBoard", getLeaderBoard);
         io.sockets.emit("orbSwitch", orbData);
       })
       .catch((err) => {
@@ -135,12 +135,37 @@ io.sockets.on("connect", (socket) => {
     playerDeath
       .then((data) => {
         // every socket needs to know the leaderBoard has changed
-        io.sockets.emit("updateLeaderBoard", leaderBoard);
+        io.sockets.emit("updateLeaderBoard", getLeaderBoard);
+
+        // a player was absorbed, let everyone know
+        io.sockets.emit("playerDeath", data);
       })
       .catch((err) => {
         // no player collision
         console.error(err);
       });
+  });
+
+  socket.on("disconnect", (data) => {
+    // console.log(data);
+    // find out who just left... which player in players??
+    if (player.playerData) {
+      players.forEach((curPlayer, index) => {
+        // if they match
+        if (curPlayer.uid === player.playerData.uid) {
+          // these are the ones we're looking for
+          players.splice(index, 1);
+          io.sockets(emit("updateLeaderBoard", getLeaderBoard));
+        }
+      });
+    }
+
+    const updateStats = `
+    UPDATE stats 
+      SET HighScore = CASE WHEN highScore < ? then ? ELSE highScore END,
+      mostOrbs = CASE WHEN mostOrbs < ? THEN ? ELSE mostOrbs END,
+      mostPlayer = CASE WHEN mostPlayers < ? THEN ? ELSE mostPlayers END
+    WHEN username = ?`;
   });
 });
 
@@ -149,6 +174,15 @@ const getLeaderBoard = () => {
   players.sort((a, b) => {
     return b.score - a.score;
   });
+
+  const leaderBoard = players.map((curPlayer) => {
+    return {
+      name: curPlayer.name,
+      score: curPlayer.score,
+    };
+  });
+
+  return leaderBoard;
 };
 
 module.exports = io;
